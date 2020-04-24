@@ -9,7 +9,7 @@ class Player():
         self.score = int(score)
         self.player_name = player_name
 
-class Scoreboard():
+class Scoreboard(): 
     def __init__(self):
         self.player_list = []
 
@@ -87,8 +87,13 @@ num_of_enemies = 6
 
 for i in range(num_of_enemies):
     enemyImg.append(pygame.image.load('enemy.png'))
-    enemyX.append(random.randint(0, 736))
-    enemyY.append(random.randint(50, 150))
+    rand_x = random.randint(0, 736)
+    rand_y = random.randint(50, 150)
+    for x in range(0, len(enemyX)):
+        if rand_x < 25 + enemyX[x] and rand_y < 50 + enemyY[x]:
+            rand_x += random.randint(50, 75)
+    enemyX.append(rand_x)
+    enemyY.append(rand_y)
     enemyX_change.append(4)
     enemyY_change.append(40)
 
@@ -104,6 +109,8 @@ bulletX_change = 0
 bulletY_change = 10
 bullet_state = "ready"
 
+double_points = False
+triple_points = False
 ended = False
 # Score
 
@@ -119,8 +126,17 @@ over_font = pygame.font.Font('freesansbold.ttf', 32)
 
 
 def show_score(x, y):
-    score = font.render("Score : " + str(score_value), True, (255, 255, 255))
-    screen.blit(score, (x, y))
+    if triple_points == True:
+        score = font.render("Score : " + str(score_value) + " (x3)", True, (255, 255, 255))
+        screen.blit(score, (x, y))
+    elif double_points == True:
+        score = font.render("Score : " + str(score_value) + " (x2)", True, (255, 255, 255))
+        screen.blit(score, (x, y))
+    else:
+        score = font.render("Score : " + str(score_value), True, (255, 255, 255))
+        screen.blit(score, (x, y))
+
+    
 
 def show_user_input(x, y):
     user_in = font.render("Enter Your Username and Press Enter to Begin:", True, (255, 255, 255))
@@ -167,8 +183,22 @@ def enemy(x, y, i):
 
 def fire_bullet(x, y):
     global bullet_state
-    bullet_state = "fire"
-    screen.blit(bulletImg, (x + 16, y + 10))
+    if score_value >= 10:
+        bullet_state = "fire"
+        screen.blit(bulletImg, (x - 5, y + 10))
+        screen.blit(bulletImg, (x + 16, y + 10))
+        screen.blit(bulletImg, (x + 40, y + 10))
+    elif score_value >= 6:
+        bullet_state = "fire"
+        screen.blit(bulletImg, (x - 5, y + 10))
+        screen.blit(bulletImg, (x + 40, y + 10))
+    elif score_value >= 3:
+        bullet_state = "fire"
+        screen.blit(bulletImg, (x - 5, y + 10))
+        screen.blit(bulletImg, (x + 40, y + 10))
+    else:
+        bullet_state = "fire"
+        screen.blit(bulletImg, (x + 16, y + 10))
 
 
 def isCollision(enemyX, enemyY, bulletX, bulletY):
@@ -273,7 +303,15 @@ while running:
             # explosionSound.play()
             bulletY = 480
             bullet_state = "ready"
-            score_value += 1
+            if score_value >= 10:
+                triple_points = True
+                double_points = False
+                score_value += 3
+            elif score_value >= 5:
+                double_points = True
+                score_value += 2
+            else:
+                score_value += 1
             enemyX[i] = random.randint(0, 736)
             enemyY[i] = random.randint(50, 150)
 
@@ -291,4 +329,3 @@ while running:
     player(playerX, playerY)
     show_score(textX, testY)
     pygame.display.update()
-
